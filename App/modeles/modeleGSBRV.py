@@ -34,9 +34,11 @@ def seConnecter( matricule , mdp ) :
 						select MAX(t2.jjmmaa) 
 						from Travailler as t2 
 						where t2.vis_matricule = t1.vis_matricule
+						
 					) 
 					and t1.tra_role <> 'Responsable'
 					and Visiteur.vis_matricule = %s
+					and Visiteur.vis_mdp = %s
 				'''
 
 		curseur.execute( requete , ( matricule , ) )
@@ -127,6 +129,33 @@ def getEchantillonsOfferts( matricule , numRapportVisite ) :
 	
 	except :
 		return None
+		
+def getMotifs() :
+	
+	try :
+		curseur = getConnexionBD().cursor()
+		requete = '''
+					select motif_num , motif_libelle
+					from Motif_visite 
+				'''
+
+		curseur.execute( requete , () )
+		
+		enregistrements = curseur.fetchall()
+		
+		motifs = []
+		for unEnregistrement in enregistrements :
+			unMotif = {}
+			unMotif[ 'motif_num' ] = unEnregistrement[ 0 ]
+			unMotif[ 'motif_libelle' ] = unEnregistrement[ 1 ]
+			motifs.append( unMotif )
+			
+		curseur.close()
+		return motifs
+	
+	except :
+		return None
+
 
 		
 def getPraticiens() :
@@ -263,6 +292,8 @@ def enregistrerEchantillonsOfferts( matricule , numRapport , echantillons ) :
 
 	except :
 		return None
+		
+
 
 		
 if __name__ == '__main__' :
@@ -306,6 +337,11 @@ if __name__ == '__main__' :
 		print enregistrerEchantillonsOfferts( 'a131' , 1 , echantillons )
 		print
 		'''
+		
+		print 'Liste des motifs :'
+		for unMotif in getMotifs() :
+			print unMotif
+		print
 		
 		print 'Liste des medicaments offerts par le visiteur a131 lors de sa 1ère visite :'
 		for uneOffre in getEchantillonsOfferts( 'a131' , 1 ) :
